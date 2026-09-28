@@ -1,0 +1,95 @@
+import { SafeAreaView } from "react-native";
+import { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  TextInput,
+  RefreshControl,
+  StatusBar,
+  Platform,
+  Modal,
+} from "react-native";
+
+import {
+  Product,
+  CreateProductDTO,
+  UpdateProductDTO,
+} from "../../src/types/Product";
+
+import { productService } from "../../src/services/productsService";
+
+
+
+export const ProductCard = () => {
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  // Controle do Modal
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+
+  // Carregar produtos da API
+  const fetchProducts = async () => {
+    try {
+      const data = await productService.getProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error ao carregar produtos");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+
+  // Excluir produto
+  const handleDeleteProduct = (product: Product) => {
+    if (!product.id) return;
+
+    Alert.alert(
+      "Confirmar exclusão",
+      `Tem cretza que deseja excluir ${product.nome}?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoading(true);
+              await productService.deleteProducts(product.id!);
+              Alert.alert("Sucesso", "Produto excluirdo com sucesso");
+              await fetchProducts();
+            } catch (error) {
+              Alert.alert("Erro ao excluir produto");
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  // Abrir modal para editar um produto
+  const handleOpenEditModal = (product: Product) => {
+    setProductToEdit(product);
+    setModalVisible(true);
+  };
+
+  
+
+  return;
+}
+
+const styles = StyleSheet.create({
+
+})
